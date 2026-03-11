@@ -1,62 +1,34 @@
-const map = L.map('map').setView([35.3367,139.4045],14);
+const map = L.map('map').setView([35.3367,139.4045],13);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{maxZoom:19}
-).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+}).addTo(map);
 
-const icon=L.icon({
+const busIcon=L.icon({
 iconUrl:'bus.png',
-iconSize:[32,32]
+iconSize:[30,30]
 });
 
-let markers={};
-
-const routes=[
-"辻12",
-"辻13",
-"辻02",
-"J2"
-];
+let markers=[];
 
 async function loadBus(){
 
-const url="https://loc.bus-vision.jp/kanachu/gtfsrt/vehicle_position.pb";
+const res=await fetch('busdata.json');
+const data=await res.json();
 
-const res=await fetch(url);
-const buffer=await res.arrayBuffer();
+markers.forEach(m=>map.removeLayer(m));
+markers=[];
 
-const data=new Uint8Array(buffer);
+data.buses.forEach(bus=>{
 
-// 仮のダミー表示（神奈中はprotobufなので簡易表示）
-const buses=[
-{lat:35.336,lon:139.404,route:"辻12"},
-{lat:35.332,lon:139.412,route:"辻13"},
-{lat:35.339,lon:139.398,route:"辻02"},
-{lat:35.334,lon:139.420,route:"J2"}
-];
+const m=L.marker(
+[bus.lat,bus.lng],
+{icon:busIcon}
+).addTo(map);
 
-buses.forEach(bus=>{
+m.bindPopup("神奈中 "+bus.route);
 
-if(!routes.includes(bus.route))return;
-
-const id=bus.route;
-
-const text=
-`神奈中バス<br>
-系統:${bus.route}`;
-
-if(markers[id]){
-
-markers[id].setLatLng([bus.lat,bus.lon]);
-
-}else{
-
-markers[id]=L.marker([bus.lat,bus.lon],{icon})
-.addTo(map)
-.bindPopup(text);
-
-}
+markers.push(m);
 
 });
 
