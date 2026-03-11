@@ -9,15 +9,16 @@ iconUrl:'bus.png',
 iconSize:[30,30]
 });
 
-let markers=[];
+let busMarkers=[];
+let stopMarkers=[];
 
 async function loadBus(){
 
 const res=await fetch('busdata.json');
 const data=await res.json();
 
-markers.forEach(m=>map.removeLayer(m));
-markers=[];
+busMarkers.forEach(m=>map.removeLayer(m));
+busMarkers=[];
 
 data.buses.forEach(bus=>{
 
@@ -28,11 +29,36 @@ const m=L.marker(
 
 m.bindPopup("神奈中 "+bus.route);
 
-markers.push(m);
+busMarkers.push(m);
+
+});
+
+}
+
+async function loadStops(){
+
+const res=await fetch('busstop.json');
+const data=await res.json();
+
+data.stops.forEach(stop=>{
+
+const m=L.circleMarker(
+[stop.lat,stop.lng],
+{
+radius:6,
+color:"blue"
+}
+).addTo(map);
+
+m.bindPopup(stop.name);
+
+stopMarkers.push(m);
 
 });
 
 }
 
 loadBus();
+loadStops();
+
 setInterval(loadBus,5000);
