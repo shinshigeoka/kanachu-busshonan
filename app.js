@@ -5,33 +5,12 @@ maxZoom:19
 }).addTo(map);
 
 const busIcon=L.icon({
-iconUrl:'bus.png',
+iconUrl:'https://cdn-icons-png.flaticon.com/512/61/61231.png',
 iconSize:[30,30]
 });
 
 let busMarkers=[];
 let stops=[];
-
-const BUS_SPEED=20; // km/h 想定速度
-
-function distance(lat1,lon1,lat2,lon2){
-
-const R=6371;
-
-const dLat=(lat2-lat1)*Math.PI/180;
-const dLon=(lon2-lon1)*Math.PI/180;
-
-const a=
-Math.sin(dLat/2)*Math.sin(dLat/2)+
-Math.cos(lat1*Math.PI/180)*
-Math.cos(lat2*Math.PI/180)*
-Math.sin(dLon/2)*Math.sin(dLon/2);
-
-const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-
-return R*c;
-
-}
 
 async function loadStops(){
 
@@ -44,42 +23,35 @@ stops.forEach(stop=>{
 
 L.circleMarker(
 [stop.lat,stop.lng],
-{
-radius:6,
-color:"blue"
-}
-).addTo(map)
+{radius:6,color:"blue"}
+)
+.addTo(map)
 .bindPopup(stop.name);
 
 });
 
 }
 
-async function loadBus(){
+function randomBus(){
 
-const res=await fetch('busdata.json');
-const data=await res.json();
+return [
+{
+route:"辻12",
+lat:35.33678+(Math.random()*0.01),
+lng:139.40464+(Math.random()*0.03)
+}
+]
+
+}
+
+function loadBus(){
 
 busMarkers.forEach(m=>map.removeLayer(m));
 busMarkers=[];
 
-data.buses.forEach(bus=>{
+const buses=randomBus();
 
-let nearestStop=null;
-let minDist=999;
-
-stops.forEach(stop=>{
-
-const d=distance(bus.lat,bus.lng,stop.lat,stop.lng);
-
-if(d<minDist){
-minDist=d;
-nearestStop=stop;
-}
-
-});
-
-const minutes=Math.round((minDist/BUS_SPEED)*60);
+buses.forEach(bus=>{
 
 const marker=L.marker(
 [bus.lat,bus.lng],
@@ -87,9 +59,7 @@ const marker=L.marker(
 ).addTo(map);
 
 marker.bindPopup(
-"神奈中 "+bus.route+
-"<br>次の停留所: "+nearestStop.name+
-"<br>約 "+minutes+" 分"
+"神奈中 "+bus.route
 );
 
 busMarkers.push(marker);
@@ -100,7 +70,4 @@ busMarkers.push(marker);
 
 loadStops();
 
-setTimeout(()=>{
-loadBus();
 setInterval(loadBus,5000);
-},1000);
