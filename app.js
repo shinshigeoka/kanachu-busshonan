@@ -5,31 +5,27 @@ L.tileLayer(
 {maxZoom:19}
 ).addTo(map);
 
-const icon = L.icon({
+const icon=L.icon({
 iconUrl:'bus.png',
 iconSize:[32,32]
 });
 
 let markers={};
 
-const targetRoutes=[
+const routes=[
 "辻12",
 "辻13",
 "辻02",
 "J2"
 ];
 
-// 茅ヶ崎〜辻堂の範囲
-const bounds={
-minLat:35.31,
-maxLat:35.35,
-minLon:139.38,
-maxLon:139.45
-};
+// APIキーをここに入れる
+const APIKEY="ここにAPIキー";
 
 async function loadBus(){
 
-const url="https://api-public.odpt.org/api/v4/odpt:Bus";
+const url=
+`https://api-public.odpt.org/api/v4/odpt:Bus?acl:consumerKey=${APIKEY}`;
 
 const res=await fetch(url);
 const data=await res.json();
@@ -38,31 +34,21 @@ data.forEach(bus=>{
 
 const route=bus["odpt:busroute"];
 
-if(!targetRoutes.includes(route)) return;
-
-if(!bus["geo:lat"]) return;
+if(!routes.includes(route)) return;
 
 const lat=bus["geo:lat"];
 const lon=bus["geo:long"];
 
-if(
-lat<bounds.minLat ||
-lat>bounds.maxLat ||
-lon<bounds.minLon ||
-lon>bounds.maxLon
-){
-return;
-}
+if(!lat) return;
 
 const id=bus["@id"];
 
-const dest=bus["odpt:destinationBusstop"] || "不明";
+const dest=bus["odpt:destinationBusstop"]||"不明";
 
-const text=`
-<b>神奈中バス</b><br>
-系統: ${route}<br>
-行き先: ${dest}
-`;
+const text=
+`神奈中バス<br>
+系統:${route}<br>
+行先:${dest}`;
 
 if(markers[id]){
 
