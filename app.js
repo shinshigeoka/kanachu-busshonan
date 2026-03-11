@@ -1,38 +1,84 @@
-var map = L.map('map').setView([35.3365,139.4047],13)
+const map = L.map('map').setView([35.3367,139.4045],14);
 
 L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-).addTo(map)
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{maxZoom:19}
+).addTo(map);
 
-var busIcon = L.icon({
-iconUrl:"bus.png",
+const icon = L.icon({
+iconUrl:'bus.png',
 iconSize:[32,32]
-})
+});
 
-var buses={}
+let markers={};
 
-function updateBus(){
+const targetRoutes=[
+"辻12",
+"辻13",
+"辻02",
+"J2"
+];
 
-var data=[
-{id:1,lat:35.336,lng:139.404},
-{id:2,lat:35.333,lng:139.410}
-]
+// 茅ヶ崎〜辻堂の範囲
+const bounds={
+minLat:35.31,
+maxLat:35.35,
+minLon:139.38,
+maxLon:139.45
+};
 
-data.forEach(b=>{
+async function loadBus(){
 
-if(!buses[b.id]){
+const url="https://api-public.odpt.org/api/v4/odpt:Bus";
 
-buses[b.id]=
-L.marker([b.lat,b.lng],{icon:busIcon}).addTo(map)
+const res=await fetch(url);
+const data=await res.json();
+
+data.forEach(bus=>{
+
+const route=bus["odpt:busroute"];
+
+if(!targetRoutes.includes(route)) return;
+
+if(!bus["geo:lat"]) return;
+
+const lat=bus["geo:lat"];
+const lon=bus["geo:long"];
+
+if(
+lat<bounds.minLat ||
+lat>bounds.maxLat ||
+lon<bounds.minLon ||
+lon>bounds.maxLon
+){
+return;
+}
+
+const id=bus["@id"];
+
+const dest=bus["odpt:destinationBusstop"] || "不明";
+
+const text=`
+<b>神奈中バス</b><br>
+系統: ${route}<br>
+行き先: ${dest}
+`;
+
+if(markers[id]){
+
+markers[id].setLatLng([lat,lon]);
 
 }else{
 
-buses[b.id].setLatLng([b.lat,b.lng])
+markers[id]=L.marker([lat,lon],{icon})
+.addTo(map)
+.bindPopup(text);
 
 }
 
-})
+});
 
 }
 
-setInterval(updateBus,5000)
+loadBus();
+setInterval(loadBus,10000);
