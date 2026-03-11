@@ -1,15 +1,8 @@
 {
-"name":"神奈中バスマップ",
-"short_name":"神奈中バス",
-"start_url":"index.html",
-"display":"standalone",
-"background_color":"#ffffff",
-"theme_color":"#2c7be5",
-"icons":[
-{
-"src":"bus.png",
-"sizes":"192x192",
-"type":"image/png"
-}
-]
+ "buses":[
+  {"lat":35.3309,"lng":139.4047,"route":"辻12"},
+  {"lat":35.3321,"lng":139.4105,"route":"辻13"},
+  {"lat":35.3340,"lng":139.4152,"route":"辻02"},
+  {"lat":35.3371,"lng":139.4200,"route":"J2"}
+ ]
 }
